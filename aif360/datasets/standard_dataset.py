@@ -86,37 +86,78 @@ class StandardDataset(BinaryLabelDataset):
 
         # 3. Drop unrequested columns
         features_to_keep = features_to_keep or df.columns.tolist()
+        
         keep = (set(features_to_keep) | set(protected_attribute_names)
               | set(categorical_features) | set([label_name]))
+        
         if instance_weights_name:
             keep |= set([instance_weights_name])
-        df = df[sorted(keep - set(features_to_drop), key=df.columns.get_loc)]
-        categorical_features = sorted(set(categorical_features) - set(features_to_drop), key=df.columns.get_loc)
+        
+        #sorted ordina, key deve essere una funzione che stabilisce in che modo 
+        #debba avvenire l'ordinamento, key=df.columns.get_loc mantiene l'ordine
+        #delle colonne.
 
+        #Es. features dataset originale: a,b,c,d,e,f feature_to_remove = e
+
+        #senza key=df.columns.get_loc: c,d,b,a,f
+        #con key=df.columns.get_loc: a,b,c,d,f
+
+        #print(df)
+        df = df[sorted(keep - set(features_to_drop))]
+        #print(df)
+
+        #stesso discorso per categoriacl features se presenti
+        categorical_features = sorted(set(categorical_features) - set(features_to_drop), key=df.columns.get_loc)
+        
         # 4. Remove any rows that have missing data.
         dropped = df.dropna()
-        count = df.shape[0] - dropped.shape[0]
+        count = df.shape[0] - dropped.shape[0] #df.shape[0] è un modo per sapere n_righe
         if count > 0:
             warning("Missing Data: {} rows removed from {}.".format(count,
                     type(self).__name__))
         df = dropped
 
         # 5. Create a one-hot encoding of the categorical variables.
+
+        #Ex. s = pd.Series(list('abca'))
+
+        # pd.get_dummies(s)
+        #   a  b  c
+        # 0  1  0  0
+        # 1  0  1  0
+        # 2  0  0  1
+        # 3  1  0  0
+
         df = pd.get_dummies(df, columns=categorical_features, prefix_sep='=')
 
         # 6. Map protected attributes to privileged/unprivileged
         privileged_protected_attributes = []
         unprivileged_protected_attributes = []
+        
         for attr, vals in zip(protected_attribute_names, privileged_classes):
+            print(attr, vals)
             privileged_values = [1.]
             unprivileged_values = [0.]
             if callable(vals):
+                print("ciao")
+                print(df[attr])
                 df[attr] = df[attr].apply(vals)
+                print(df[attr])
             elif np.issubdtype(df[attr].dtype, np.number):
+                print("ooo")
+                print("df[attr] ", list(set(df[attr]).difference(vals)))
                 # this attribute is numeric; no remapping needed
+                print("priviliged values prima: ",privileged_values)
                 privileged_values = vals
+                print("priviliged values =vals: ",privileged_values)
+
+                print("unprivileged_values prima", unprivileged_values)
+                print(type(vals))
                 unprivileged_values = list(set(df[attr]).difference(vals))
+                print("unprivileged_values dopo", unprivileged_values)
+
             else:
+                print("eee")
                 # find all instances which match any of the attribute values
                 priv = np.logical_or.reduce(np.equal.outer(vals, df[attr].to_numpy()))
                 df.loc[priv, attr] = privileged_values[0]
