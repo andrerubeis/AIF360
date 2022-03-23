@@ -100,13 +100,24 @@ class StructuredDataset(Dataset):
 
         # Convert all column names to strings
         df.columns = df.columns.astype(str).tolist()
+        # ['Income Binary', 'race', 'sex', 'Age (decade)=10', 'Age (decade)=20',
+        #  'Age (decade)=30', 'Age (decade)=40', 'Age (decade)=50',
+        #  'Age (decade)=60', 'Age (decade)=>=70', 'Education Years=6',
+        #  'Education Years=7', 'Education Years=8', 'Education Years=9',
+        #  'Education Years=10', 'Education Years=11', 'Education Years=12',
+        #  'Education Years=<6', 'Education Years=>12']
+
         label_names = list(map(str, label_names))
         protected_attribute_names = list(map(str, protected_attribute_names))
 
+        #Retrieve the features: so the columns of original dataset withou label and scores(?)
+        #scores: probability score assigned to a label
         self.feature_names = [n for n in df.columns if n not in label_names
                               and (not scores_names or n not in scores_names)
                               and n != instance_weights_name]
         self.label_names = label_names
+
+        #Copy the values in features and labels
         self.features = df[self.feature_names].values.copy()
         self.labels = df[self.label_names].values.copy()
         self.instance_names = df.index.astype(str).tolist()
@@ -116,11 +127,11 @@ class StructuredDataset(Dataset):
         else:
             self.scores = self.labels.copy()
 
-        df_prot = df.loc[:, protected_attribute_names]
+        df_prot = df.loc[:, protected_attribute_names] #extract ['sex'] column
         self.protected_attribute_names = df_prot.columns.astype(str).tolist()
         self.protected_attributes = df_prot.values.copy()
 
-        # Infer the privileged and unprivileged values in not provided
+        # Infer the privileged and unprivileged values if not provided
         if unprivileged_protected_attributes and privileged_protected_attributes:
             self.unprivileged_protected_attributes = unprivileged_protected_attributes
             self.privileged_protected_attributes = privileged_protected_attributes
@@ -128,6 +139,11 @@ class StructuredDataset(Dataset):
             self.unprivileged_protected_attributes = [
                 np.sort(np.unique(df_prot[attr].values))[:-1]
                 for attr in self.protected_attribute_names]
+
+            #Given an array x:  x[-1:]: always returns the last value
+            #                    x[:-1]: always return all the values except the last one
+            #
+            #So here we are assuming that the highest value is the priviliged one while all the others are unpriviliged
             self.privileged_protected_attributes = [
                 np.sort(np.unique(df_prot[attr].values))[-1:]
                 for attr in self.protected_attribute_names]

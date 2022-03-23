@@ -29,10 +29,10 @@ def compute_boolean_conditioning_vector(X, feature_names, condition=None):
         return np.ones(X.shape[0], dtype=bool)
 
     overall_cond = np.zeros(X.shape[0], dtype=bool)
-    for group in condition:
+    for group in condition: #group: {sex:1}
         group_cond = np.ones(X.shape[0], dtype=bool)
-        for name, val in group.items():
-            index = feature_names.index(name)
+        for name, val in group.items(): #name: sex, value:1
+            index = feature_names.index(name) #store the index corresponding to the name feature in feature_names (['sex'])
             group_cond = np.logical_and(group_cond, X[:, index] == val)
         overall_cond = np.logical_or(overall_cond, group_cond)
 

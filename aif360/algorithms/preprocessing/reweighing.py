@@ -110,6 +110,8 @@ class Reweighing(Transformer):
                             dataset.protected_attributes,
                             dataset.protected_attribute_names,
                             condition=self.unprivileged_groups)
+        #ravel transform a Panda serie as a numpy array
+        #fav_cond: numpy array of booleans (True: object satisfies the conditions
         fav_cond = dataset.labels.ravel() == dataset.favorable_label
         unfav_cond = dataset.labels.ravel() == dataset.unfavorable_label
 

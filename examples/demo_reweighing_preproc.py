@@ -126,7 +126,8 @@ print(
 
 RW = Reweighing(unprivileged_groups=unprivileged_groups,
                 privileged_groups=privileged_groups)
-RW.fit(dataset_orig_train)
+RW.fit(dataset_orig_train) #        new_dataset = func(self, *args, **kwargs: returns only an object of type Reweighting
+
 dataset_transf_train = RW.transform(dataset_orig_train)
 
 # %%

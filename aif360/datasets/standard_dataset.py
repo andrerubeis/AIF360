@@ -170,11 +170,16 @@ class StandardDataset(BinaryLabelDataset):
             favorable_label = favorable_classes[0]
             unfavorable_label = set(df[label_name]).difference(favorable_classes).pop()
         else:
+            #df[attr] is not numerical
+
             # find all instances which match any of the favorable classes
-            #np.logica_or.reduce because if we put away reduce we are passing 2 arguments but np.logical_or.reduce
+            #np.logical_or.reduce because if we put away reduce we are passing 2 arguments but np.logical_or.reduce
             #accepts only one argument
+
+            #pos is a numpy array of booleans (True: > 50k, False: <= 50k)
             pos = np.logical_or.reduce(np.equal.outer(favorable_classes, 
                                                       df[label_name].to_numpy()))
+            #Assign to correspondant True values the favorable label and to False values the negative
             df.loc[pos, label_name] = favorable_label
             df.loc[~pos, label_name] = unfavorable_label
 

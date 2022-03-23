@@ -38,13 +38,14 @@ class DatasetMetric(Metric):
         super(DatasetMetric, self).__init__(dataset)
 
         # TODO: should this deepcopy?
-        self.privileged_groups = privileged_groups
-        self.unprivileged_groups = unprivileged_groups
+        self.privileged_groups = privileged_groups # [{'sex': 1}]
+        self.unprivileged_groups = unprivileged_groups #[{'sex': 0}]
 
         # don't check if nothing was provided
         if not self.privileged_groups or not self.unprivileged_groups:
             return
 
+        #Store in priv_mask and unpriv_mask the rows of the dataset that satisify the conditions
         priv_mask = utils.compute_boolean_conditioning_vector(
             self.dataset.protected_attributes,
             self.dataset.protected_attribute_names, self.privileged_groups)
