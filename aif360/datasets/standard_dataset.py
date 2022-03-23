@@ -86,10 +86,15 @@ class StandardDataset(BinaryLabelDataset):
 
         # 3. Drop unrequested columns
         features_to_keep = features_to_keep or df.columns.tolist()
-        
+
+        #| is an equivalent way to perform the union operation
+        # features_to_keep: ['Age (decade)', 'race', 'Education Years', 'Income Binary', 'sex']
+        # protected_attribute_names: ['sex']
+        # label_name: Income Binary
         keep = (set(features_to_keep) | set(protected_attribute_names)
               | set(categorical_features) | set([label_name]))
-        
+
+        #keep: {'Age (decade)', 'Education Years', 'Income Binary', 'race', 'sex'}
         if instance_weights_name:
             keep |= set([instance_weights_name])
         
@@ -133,31 +138,18 @@ class StandardDataset(BinaryLabelDataset):
         # 6. Map protected attributes to privileged/unprivileged
         privileged_protected_attributes = []
         unprivileged_protected_attributes = []
-        
+        #protected_attribute_names: sex (reweighting example), privileged_ classes : [1.0]
         for attr, vals in zip(protected_attribute_names, privileged_classes):
-            print(attr, vals)
             privileged_values = [1.]
             unprivileged_values = [0.]
-            if callable(vals):
-                print("ciao")
-                print(df[attr])
+            if callable(vals): #vals is callable since it is a list [1.0]
                 df[attr] = df[attr].apply(vals)
-                print(df[attr])
             elif np.issubdtype(df[attr].dtype, np.number):
-                print("ooo")
-                print("df[attr] ", list(set(df[attr]).difference(vals)))
                 # this attribute is numeric; no remapping needed
-                print("priviliged values prima: ",privileged_values)
                 privileged_values = vals
-                print("priviliged values =vals: ",privileged_values)
-
-                print("unprivileged_values prima", unprivileged_values)
-                print(type(vals))
                 unprivileged_values = list(set(df[attr]).difference(vals))
-                print("unprivileged_values dopo", unprivileged_values)
 
             else:
-                print("eee")
                 # find all instances which match any of the attribute values
                 priv = np.logical_or.reduce(np.equal.outer(vals, df[attr].to_numpy()))
                 df.loc[priv, attr] = privileged_values[0]
@@ -179,6 +171,8 @@ class StandardDataset(BinaryLabelDataset):
             unfavorable_label = set(df[label_name]).difference(favorable_classes).pop()
         else:
             # find all instances which match any of the favorable classes
+            #np.logica_or.reduce because if we put away reduce we are passing 2 arguments but np.logical_or.reduce
+            #accepts only one argument
             pos = np.logical_or.reduce(np.equal.outer(favorable_classes, 
                                                       df[label_name].to_numpy()))
             df.loc[pos, label_name] = favorable_label

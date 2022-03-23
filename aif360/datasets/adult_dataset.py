@@ -76,8 +76,11 @@ class AdultDataset(StandardDataset):
             used for more descriptive visualizations.
         """
 
+        #Store in train_path the path of your training data (our case adult.data)
+        #'C:\\Users\\andre\\Documents\\GITHUB\\MY PROJECTS\\AIF360\\aif360\\datasets\\..\\data\\raw\\adult\\adult.data'
         train_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   '..', 'data', 'raw', 'adult', 'adult.data')
+        #Same for test
         test_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   '..', 'data', 'raw', 'adult', 'adult.test')
         # as given by adult.names
@@ -85,6 +88,8 @@ class AdultDataset(StandardDataset):
             'education-num', 'marital-status', 'occupation', 'relationship',
             'race', 'sex', 'capital-gain', 'capital-loss', 'hours-per-week',
             'native-country', 'income-per-year']
+
+        #Obtain the raw dataset (ex. age: 39 (not decade), race: White (not 1), ...
         try:
             train = pd.read_csv(train_path, header=None, names=column_names,
                 skipinitialspace=True, na_values=na_values)
@@ -102,6 +107,9 @@ class AdultDataset(StandardDataset):
             import sys
             sys.exit(1)
 
+        #Put together train and test dataset (vertically, train above test) to obtain the original raw dataframe and
+        #ignore_index means that if train was :(0,1,2) and test (0,1) instead of having (0,1,2,0,1) you simply have
+        #(0,1,2,3,4)
         df = pd.concat([test, train], ignore_index=True)
 
         super(AdultDataset, self).__init__(df=df, label_name=label_name,

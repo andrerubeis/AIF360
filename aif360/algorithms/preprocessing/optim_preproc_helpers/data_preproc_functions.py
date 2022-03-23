@@ -8,8 +8,10 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
             https://github.com/fair-preprocessing/nips2017/blob/master/Adult/code/Generate_Adult_Data.ipynb
             If sub_samp != False, then return smaller version of dataset truncated to tiny_test data points.
         """
-
+        print("ciao")
         # Group age by decade
+        #df['Age (decade)'] (Series): (0,age0), (1, age1), ...
+        #Create a new column 'Age (decade) in which each age is mapped to its decade (ex. 25->20, 38->30)
         df['Age (decade)'] = df['age'].apply(lambda x: x//10*10)
         # df['Age (decade)'] = df['age'].apply(lambda x: np.floor(x/10.0)*10.0)
 
@@ -35,10 +37,13 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
 
         # Cluster education and age attributes.
         # Limit education range
+        #Every value <=5 is mapped with '<6' and every value >=13 is mapped with >12, the values between 5 and 13 remain
+        #the same
         df['Education Years'] = df['education-num'].apply(lambda x: group_edu(x))
         df['Education Years'] = df['Education Years'].astype('category')
 
         # Limit age range
+        #Same done for Education Years is done for Age decade in which decades greater than 70 are simply mapped with >70
         df['Age (decade)'] = df['Age (decade)'].apply(lambda x: age_cut(x))
 
         # Rename income variable
@@ -50,7 +55,7 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
         df['sex'] = df['sex'].replace({'Female': 0.0, 'Male': 1.0})
         df['race'] = df['race'].apply(lambda x: group_race(x))
 
-        if sub_samp and not balance:
+        if sub_samp and not balance: #default both are False
             df = df.sample(sub_samp)
         if sub_samp and balance:
             df_0 = df[df['Income Binary'] == '<=50K']
@@ -59,12 +64,18 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
             df_1 = df_1.sample(int(sub_samp/2))
             df = pd.concat([df_0, df_1])
         return df
+    #load_preproc starts here:
+    #1. First of all I select the X, XD, D, Y features, all priviliged, all unprivileged attributes, all protected and
+    #all unprotecte.
 
+    #2. I make the preprocessing of the dataset so mappings of race, age and sex
+
+    #3. Load the dataset processed
     XD_features = ['Age (decade)', 'Education Years', 'sex', 'race']
-    D_features = ['sex', 'race'] if protected_attributes is None else protected_attributes
+    D_features = ['sex', 'race'] if protected_attributes is None else protected_attributes #D_features = sex
     Y_features = ['Income Binary']
-    X_features = list(set(XD_features)-set(D_features))
-    categorical_features = ['Age (decade)', 'Education Years']
+    X_features = list(set(XD_features)-set(D_features)) #Age (decade), race, Education Years
+    categorical_features = ['Age (decade)', 'Education Years'] #Age(decade), Education Years
 
     # privileged classes
     all_privileged_classes = {"sex": [1.0],
