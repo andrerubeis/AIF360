@@ -1,5 +1,5 @@
 # %% md
-
+#https://towardsdatascience.com/reweighing-the-adult-dataset-to-make-it-discrimination-free-44668c9379e8
 #### This notebook demonstrates the use of a reweighing pre-processing algorithm for bias mitigation
 
 # Load all necessary packages
