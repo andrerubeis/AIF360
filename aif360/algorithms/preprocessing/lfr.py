@@ -50,17 +50,21 @@ class LFR(Transformer):
         self.privileged_groups = privileged_groups
         if len(self.unprivileged_groups) > 1 or len(self.privileged_groups) > 1:
             raise ValueError("Only one unprivileged_group or privileged_group supported.")
+
+        #self.unprivileged_groups: dictionary of one single element {'sex':0}
+        #self.privileged_groups: dictionary of one single element {'sex':1}
+
         self.protected_attribute_name = list(self.unprivileged_groups[0].keys())[0]
         self.unprivileged_group_protected_attribute_value = self.unprivileged_groups[0][self.protected_attribute_name]
         self.privileged_group_protected_attribute_value = self.privileged_groups[0][self.protected_attribute_name]
 
-        self.k = k
-        self.Ax = Ax
-        self.Ay = Ay
-        self.Az = Az
+        self.k = k      #10
+        self.Ax = Ax    #0.1
+        self.Ay = Ay    #1
+        self.Az = Az    #2
 
-        self.print_interval = print_interval
-        self.verbose = verbose
+        self.print_interval = print_interval #250
+        self.verbose = verbose #1
 
         self.w = None
         self.prototypes = None
@@ -80,11 +84,29 @@ class LFR(Transformer):
 
         num_train_samples, self.features_dim = np.shape(dataset.features)
 
+        #dataset.protected_attributes is np array of lists, each one per sample (34189) where each list has length equals
+        #to n, where n is the number of protected attributes and each element of the list is 0 or 1 representing
+        #unprivileged and priviliged values respectively.
+
+        #For example if protected attributes are race and sex and we have 2 samples: White, Man and White Woman
+        #the corresponding lists will be [1, 1][1, 0]
+
+        #In the following line of code we simply take the values of protected attribute of interest and reshape iy
+        #as a column
+
         protected_attributes = np.reshape(
             dataset.protected_attributes[:, dataset.protected_attribute_names.index(self.protected_attribute_name)],
             [-1, 1])
+
+        #self.unprivileged_group_protected_attribute_value: 0
+        #np.where(protected_attributes == self.unprivileged_group_protected_attribute_value):   check where protected_attributes
+        #flatten: reduce the dimensions of something to a single dimension (ex. ([1,2], [3,4])->([1,2,3,4])                                                                                     assume value 0
         unprivileged_sample_ids = np.array(np.where(protected_attributes == self.unprivileged_group_protected_attribute_value))[0].flatten()
         privileged_sample_ids = np.array(np.where(protected_attributes == self.privileged_group_protected_attribute_value))[0].flatten()
+
+        #features are not names but numbers:[ 0.41213417, -1.42078489, -0.230512  , ..., -0.18428884,
+        #-0.23414819, -0.57391655]])
+
         features_unprivileged = dataset.features[unprivileged_sample_ids]
         features_privileged = dataset.features[privileged_sample_ids]
         labels_unprivileged = dataset.labels[unprivileged_sample_ids]
@@ -92,6 +114,7 @@ class LFR(Transformer):
 
         # Initialize the LFR optim objective parameters
         parameters_initialization = np.random.uniform(size=self.k + self.features_dim * self.k)
+        #bnd = [(0,1)...(0,1), ..., (None, None), ..., (None, None)]
         bnd = [(0, 1)]*self.k + [(None, None)]*self.features_dim*self.k
         lfr_helpers.LFR_optim_objective.steps = 0
 
