@@ -82,7 +82,7 @@ class OptimPreproc(Transformer):
         Returns:
             OptimPreproc: Returns self.
         """
-        if len(np.unique(dataset.instance_weights)) > 1:
+        if len(np.unique(dataset.instance_weights)) > 1: #default len = 1
             warn("Optimized pre-processing will ignore instance_weights in "
                  "the dataset during fit.")
         # Convert the dataset to a dataframe and preprocess
@@ -97,6 +97,8 @@ class OptimPreproc(Transformer):
 
         # Feature names
         self.Y_feature_names = dataset.label_names
+
+        #all features names except labels and protected attributes
         self.X_feature_names = [n for n in df.columns.tolist()
                                 if n not in self.Y_feature_names
                                 and n not in self.protected_attribute_names]

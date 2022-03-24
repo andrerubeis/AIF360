@@ -131,8 +131,17 @@ class OptTools():
 
         # generates a mask assuming the multindex column is a subset of the
         # multindex rows
-        target_ix = list(dfRef.columns.names)
+
+        # dfRef.index: all the combinations ('Female', 0.0,   '10',  '10', '<=50K'),
+        #             ('Female', 0.0,   '10',  '10',  '>50K'), ...
+
+        # pd.DataFrame(index=dfRef.index): empty dataframe with index values Index: [(Female, 0.0, 10, 10, <=50K), (Female, 0.0, 10, 10, >50K), (Female, 0.0, 10, 11, <=50K), (Female, 0.0, 10, 11, >50K), (Female, 0.0, 10, 12, <=50K), (Female, 0.0, 10, 12, >50K), (Female, 0.0, 10, 6, <=50K), (Female, 0.0, 10, 6, >50K), (Female, 0.0, 10, 7, <=50K), (Female, 0.0, 10, 7, >50K), (Female, 0.0, 10, 8, <=50K), (Female, 0.0, 10, 8, >50K), (Female, 0.0, 10, 9, <=50K), (Female, 0.0, 10, 9, >50K), (Female, 0.0, 10, <6, <=50K), (Female, 0.0, 10, <6, >50K), (Female, 0.0, 10, >12, <=50K), (Female, 0.0, 10, >12, >50K), (Female, 0.0, 20, 10, <=50K), (Female, 0.0, 20, 10, >50K), (Female, 0.0, 20, 11, <=50K), (Female, 0.0, 20, 11, >50K), (Female, 0.0, 20, 12, <=50K), (Female, 0.0, 20, 12, >50K), (Female, 0.0, 20, 6, <=50K), (Female, 0.0, 20, 6, >50K), (Female, 0.0, 20, 7, <=50K), (Female, 0.0, 20, 7, >50K), (Female, 0.0, 20, 8, <=50K), (Female, 0.0, 20, 8, >50K), (Female, 0.0, 20, 9, <=50K), (Female, 0.0, 20, 9, >50K), (Female, 0.0, 20, <6, <=50K), (Female, 0.0, 20, <6, >50K), (Female, 0.0, 20, >12, <=50K), (Female, 0.0, 20, >12, >50K), (Female, 0.0, 30, 10, <=50K), (Female, 0.0, 30, 10, >50K), (Female, 0.0, 30, 11, <=50K), (Female, 0.0, 30, 11, >50K), (Female, 0.0, 30, 12, <=50K), (Female, 0.0, 30, 12, >50K), (Female, 0.0, 30, 6, <=50K), (Female, 0.0, 30, 6, >50K), (Female, 0.0, 30, 7, <=50K), (Female, 0.0, 30, 7, >50K), (Female, 0.0, 30, 8, <=50K), (Female, 0.0, 30, 8, >50K), (Female, 0.0, 30, 9, <=50K), (Female, 0.0, 30, 9, >50K), (Female, 0.0, 30, <6, <=50K), (Female, 0.0, 30, <6, >50K), (Female, 0.0, 30, >12, <=50K), (Female, 0.0, 30, >12, >50K), (Female, 0.0, 40, 10, <=50K), (Female, 0.0, 40, 10, >50K), (Female, 0.0, 40, 11, <=50K), (Female, 0.0, 40, 11, >50K), (Female, 0.0, 40, 12, <=50K), (Female, 0.0, 40, 12, >50K), (Female, 0.0, 40, 6, <=50K), (Female, 0.0, 40, 6, >50K), (Female, 0.0, 40, 7, <=50K), (Female, 0.0, 40, 7, >50K), (Female, 0.0, 40, 8, <=50K), (Female, 0.0, 40, 8, >50K), (Female, 0.0, 40, 9, <=50K), (Female, 0.0, 40, 9, >50K), (Female, 0.0, 40, <6, <=50K), (Female, 0.0, 40, <6, >50K), (Female, 0.0, 40, >12, <=50K), (Female, 0.0, 40, >12, >50K), (Female, 0.0, 50, 10, <=50K), (Female, 0.0, 50, 10, >50K), (Female, 0.0, 50, 11, <=50K), (Female, 0.0, 50, 11, >50K), (Female, 0.0, 50, 12, <=50K), (Female, 0.0, 50, 12, >50K), (Female, 0.0, 50, 6, <=50K), (Female, 0.0, 50, 6, >50K), (Female, 0.0, 50, 7, <=50K), (Female, 0.0, 50, 7, >50K), (Female, 0.0, 50, 8, <=50K), (Female, 0.0, 50, 8, >50K), (Female, 0.0, 50, 9, <=50K), (Female, 0.0, 50, 9, >50K), (Female, 0.0, 50, <6, <=50K), (Female, 0.0, 50, <6, >50K), (Female, 0.0, 50, >12, <=50K), (Female, 0.0, 50, >12, >50K), (Female, 0.0, 60, 10, <=50K), (Female, 0.0, 60, 10, >50K), (Female, 0.0, 60, 11, <=50K), (Female, 0.0, 60, 11, >50K), (Female, 0.0, 60, 12, <=50K), (Female, 0.0, 60, 12, >50K), (Female, 0.0, 60, 6, <=50K), (Female, 0.0, 60, 6, >50K), (Female, 0.0, 60, 7, <=50K), (Female, 0.0, 60, 7, >50K), ...]
+        # pd.DataFrame(index=dfRef.index).reset_index(): takes all the combinations and creates a dataframw in which each row correspond to a different combination
+        # pd.DataFrame(index=dfRef.index).reset_index()[target_ix].values: takes all the combinations of ['race', 'Age (decade)', 'Education Years', 'Income Binary']
+        target_ix = list(dfRef.columns.names) #columns names without protected attribute (['race', 'Age (decade)', 'Education Years', 'Income Binary'])
         dfRows = pd.DataFrame(index=dfRef.index).reset_index()[target_ix].values
+
+        #dfRef.columns: names=['race', 'Age (decade)', 'Education Years', 'Income Binary']
         dfCols = pd.DataFrame(index=dfRef.columns).reset_index()[target_ix].values
 
         for i in range(dfRef.shape[0]):
@@ -154,11 +163,13 @@ class OptTools():
             Y (list): names of Y features
         """
 
-        self.D_features = D
-        self.Y_features = Y
-        self.X_features = X
+        self.D_features = D #sex
+        self.Y_features = Y #income
+        self.X_features = X #race, age(decade), educational years
 
         # Get values for Pandas multindex
+
+        #Create lists of lists made by values composing the dataframe
         self.D_values = [self.dfJoint[feature].unique().tolist()
                          for feature in self.D_features]
         self.Y_values = [self.dfJoint[feature].unique().tolist()
@@ -167,18 +178,26 @@ class OptTools():
                          for feature in self.X_features]
 
         # Create multindex for mapping dataframe
+
+        #MultiIndex store all the combinations of mappings so we have something like:
+
+        #Female, 0.0, 10, 10, <=50K (sex, race, age decade, educational years, income
+        #Female, 0.0, 10, 10 > 50K
         self.DXY_features = self.D_features+self.X_features+self.Y_features
         self.DXY_values = self.D_values+self.X_values+self.Y_values
         self.DXY_index = pd.MultiIndex.from_product(self.DXY_values,
                                                     names=self.DXY_features)
 
         # Create multindex for distortion dataframe
-        self.XY_features = self.X_features+self.Y_features
+        self.XY_features = self.X_features+self.Y_features #all features except 'sex'
         self.XY_values = self.X_values+self.Y_values
         self.XY_index = pd.MultiIndex.from_product(self.XY_values,
                                                    names=self.XY_features)
 
         # Initialize mapping dataframe
+        # self.dfP dataframe will be a dataset with columns all possible combinations of mappings, last columns have
+        # None name
+
         self.dfP = pd.DataFrame(np.zeros((len(self.DXY_index),
                                           len(self.XY_index))),
                                 index=self.DXY_index, columns=self.XY_index)
@@ -193,15 +212,15 @@ class OptTools():
         # Generate masks for recovering marginals
         ###
         self.dfPxyd = pd.DataFrame(index=self.dfP.index, columns=['Frequency'])
-        index_list = [list(x) for x in self.dfPxyd.index.tolist()]
+        index_list = [list(x) for x in self.dfPxyd.index.tolist()] #[['Female', 0.0, '10', '10', '<=50K'], ['Female', 0.0, '10', '10', '>50K'], ['Female', 0.0, '10', '11', '<=50K'],
 
-        # find corresponding frequency value
+        # find corresponding frequency value for each combination inside the dataset
         i = 0
         for comb in self.dfJoint[self.DXY_features].values.tolist():
             # get the entry corresponding to the combination
             idx = index_list.index(comb)
             # add marginal to list
-            self.dfPxyd.iloc[idx, 0] = self.dfJoint.loc[i, 'Frequency']
+            self.dfPxyd.iloc[idx, 0] = self.dfJoint.loc[i, 'Frequency'] #get the frequency of the combination of index = idx
             i += 1
 
         # create mask that reduces Pxyd to Pxy
@@ -257,7 +276,7 @@ class OptTools():
                 (See optim_preproc_helper.get_distortion for an example)
             clist (list): Distance thresholds for individual distortion
         """
-
+        #clist = [0.99, 1.99, 2.99]
         # set constraint list
         self.clist = clist
 

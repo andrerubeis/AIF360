@@ -400,15 +400,21 @@ class StructuredDataset(Dataset):
                   returned.
 
         """
+        #We horizontally stack together the columns of the labels and features
         df = pd.DataFrame(np.hstack((self.features, self.labels)),
             columns=self.feature_names+self.label_names,
             index=self.instance_names)
+
+        #rewrite the protected attribute coulmns in a proper way
         df.loc[:, self.protected_attribute_names] = self.protected_attributes
 
         # De-dummy code if necessary
         if de_dummy_code:
+            #Re obtain the not one hot encoding dataset (ex. <=50K instead of 0, Age(decade): 30,20 instead of having
+            #multiple attributes like "Age (decade) = 20, Age(decade) = 30, ...
             df = self._de_dummy_code_df(df, sep=sep, set_category=set_category)
             if 'label_maps' in self.metadata:
+                #{'label_maps': [{1.0: '>50K', 0.0: '<=50K'}],
                 for i, label in enumerate(self.label_names):
                     df[label] = df[label].replace(self.metadata['label_maps'][i])
             if 'protected_attribute_maps' in self.metadata:
