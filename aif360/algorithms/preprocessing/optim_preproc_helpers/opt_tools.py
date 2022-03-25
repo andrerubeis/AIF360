@@ -171,20 +171,26 @@ class OptTools():
 
         #Create lists of lists made by values composing the dataframe
         self.D_values = [self.dfJoint[feature].unique().tolist()
-                         for feature in self.D_features]
+                         for feature in self.D_features] #Female, Male
         self.Y_values = [self.dfJoint[feature].unique().tolist()
-                         for feature in self.Y_features]
+                         for feature in self.Y_features] #<= 50K, >50K
         self.X_values = [self.dfJoint[feature].unique().tolist()
                          for feature in self.X_features]
+        #[[0.0, 1.0], (race)
+        #['10', '20', '30', '40', '50', '60', '>=70'], (age decade)
+        #['10', '11', '12', '6', '7', '8', '9', '<6', '>12']] (educational years)
 
         # Create multindex for mapping dataframe
 
         #MultiIndex store all the combinations of mappings so we have something like:
 
-        #Female, 0.0, 10, 10, <=50K (sex, race, age decade, educational years, income
+        #Female, 0.0, 10, 10, <=50K (sex, race, age decade, educational years, income)
         #Female, 0.0, 10, 10 > 50K
-        self.DXY_features = self.D_features+self.X_features+self.Y_features
-        self.DXY_values = self.D_values+self.X_values+self.Y_values
+        #...
+        #504 total unique combinations
+
+        self.DXY_features = self.D_features+self.X_features+self.Y_features #['sex', 'race', 'Age (decade)', 'Education Years', 'Income Binary']
+ #        self.DXY_values = self.D_values+self.X_values+self.Y_values
         self.DXY_index = pd.MultiIndex.from_product(self.DXY_values,
                                                     names=self.DXY_features)
 
@@ -195,27 +201,33 @@ class OptTools():
                                                    names=self.XY_features)
 
         # Initialize mapping dataframe
-        # self.dfP dataframe will be a dataset with columns all possible combinations of mappings, last columns have
+        # self.dfP dataframe will be a dataset n_elements_DXY*n_elements_XY with columns all possible combinations of mappings, last columns have
         # None name
-
+        #self.dfP: [504 rows (tot combinations of DXY) x 252 columns (tot combinations of XY)]
         self.dfP = pd.DataFrame(np.zeros((len(self.DXY_index),
                                           len(self.XY_index))),
                                 index=self.DXY_index, columns=self.XY_index)
 
         # Initialize distortion dataframe
+        # self.dfD: [252 rows (tot combinations of XY) x 252 columns (tot combinations of XY)]
         self.dfD = pd.DataFrame(np.zeros((len(self.XY_index),
                                           len(self.XY_index))),
                                 index=self.XY_index.copy(),
                                 columns=self.XY_index.copy())
 
         ###
-        # Generate masks for recovering marginals
+        # Generate masks for recovering marginals pxyd
         ###
         self.dfPxyd = pd.DataFrame(index=self.dfP.index, columns=['Frequency'])
         index_list = [list(x) for x in self.dfPxyd.index.tolist()] #[['Female', 0.0, '10', '10', '<=50K'], ['Female', 0.0, '10', '10', '>50K'], ['Female', 0.0, '10', '11', '<=50K'],
 
         # find corresponding frequency value for each combination inside the dataset
         i = 0
+
+        #self.dfJoint: 504 rows (total combinations) x 7 columns (race, Age (decade), Education Years, Income Binary, sex, Count, Frequency)
+        #it contains the count and frequency of each combination present in the original dataset
+
+        #self.dfPxyd: 504 (total combinations) x 1 column (it actually corresponds to the Frequency)
         for comb in self.dfJoint[self.DXY_features].values.tolist():
             # get the entry corresponding to the combination
             idx = index_list.index(comb)
@@ -229,6 +241,7 @@ class OptTools():
                                                          len(self.dfD))),
                                                index=self.dfP.index,
                                                columns=self.dfD.index)
+        #self.dfMask_Pxyd_to_Pxy: [504 rows x 252 columns]
         self.dfMask_Pxyd_to_Pxy = self.get_mask(self.dfMask_Pxyd_to_Pxy)
 
         # compute mask that reduces Pxyd to Pyd

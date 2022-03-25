@@ -85,7 +85,7 @@ class OptimPreproc(Transformer):
         if len(np.unique(dataset.instance_weights)) > 1: #default len = 1
             warn("Optimized pre-processing will ignore instance_weights in "
                  "the dataset during fit.")
-        # Convert the dataset to a dataframe and preprocess
+        # Convert the dataset to a dataframe and preprocess, only dataset is returned (not also the attributes)
         df, _ = dataset.convert_to_dataframe(de_dummy_code=True, sep=sep,
                                              set_category=True)
 
