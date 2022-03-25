@@ -126,8 +126,11 @@ print(
 
 RW = Reweighing(unprivileged_groups=unprivileged_groups,
                 privileged_groups=privileged_groups)
+
+#store the weights based on the conditionings
 RW.fit(dataset_orig_train) #        new_dataset = func(self, *args, **kwargs: returns only an object of type Reweighting
 
+#Rebalnace the dataset with the new weights
 dataset_transf_train = RW.transform(dataset_orig_train)
 
 # %%
@@ -144,6 +147,7 @@ assert np.abs(dataset_transf_train.instance_weights.sum() - dataset_orig_train.i
 metric_transf_train = BinaryLabelDatasetMetric(dataset_transf_train,
                                                unprivileged_groups=unprivileged_groups,
                                                privileged_groups=privileged_groups)
+x = metric_transf_train.mean_difference()
 display(Markdown("#### Transformed training dataset"))
 print(
     "Difference in mean outcomes between unprivileged and privileged groups = %f" % metric_transf_train.mean_difference())

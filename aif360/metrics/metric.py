@@ -28,12 +28,13 @@ def memoize(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        key = _make_key(args, kwargs, unhashable)
+        key = _make_key(args, kwargs, unhashable) #key: (<aif360.metrics.binary_label_dataset_metric.BinaryLabelDatasetMetric at 0x2688cf79130>,)
         if key is unhashable:
             return func(*args, **kwargs)
         result = cache.get(key, sentinal)
         if result is not sentinal:
             return result
+        #apply func (metric): mean difference
         result = func(*args, **kwargs)
         cache[key] = result
         return result

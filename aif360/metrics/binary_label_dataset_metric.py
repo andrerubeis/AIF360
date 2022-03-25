@@ -63,7 +63,20 @@ class BinaryLabelDatasetMetric(DatasetMetric):
             AttributeError: `privileged_groups` or `unprivileged_groups` must be
                 must be provided at initialization to condition on them.
         """
+        #Privileged = False -> condition = [{'sex': 0}]
+        #Priviliged = True ->  condition = [{'sex': 1}]
+        print(f"privileged = {privileged}, Favorable label: {self.dataset.favorable_label}")
         condition = self._to_condition(privileged)
+
+        #Formula: W_positive_priviliged = (N_privileged * N_positive)/(N_all * N_positive_privileged)
+        #Forumla: W_positive_unpriviliged
+        #Forumla: W_negative_priviliged
+        #Forumla: W_negative_unpriviliged
+
+        #Since here we are considering the mean_difference (aka statistical partity difference)
+        #MD = SPD = Rate_positive_unprivileged - Rate_positive_privileged here just positives are considered
+
+        #compute numerator of formula reweighting: N_positive*N_priviliged and N_positive*N_unpriviliged
         return utils.compute_num_pos_neg(self.dataset.protected_attributes,
             self.dataset.labels, self.dataset.instance_weights,
             self.dataset.protected_attribute_names,
@@ -93,6 +106,15 @@ class BinaryLabelDatasetMetric(DatasetMetric):
     def base_rate(self, privileged=None):
         """Compute the base rate, :math:`Pr(Y = 1) = P/(P+N)`, optionally
         conditioned on protected attributes.
+        If privileged = True:
+        - P: favorable outcomes of priviliged samples
+        - N: unfavorable outcomes of priviliged samples
+        - P+N: total priviliged samples
+
+        If priviliged = False:
+        - P: favorable outcomes of unpriviliged samples
+        - N: unfavorable outcomes of unpriviliged samples
+        - P+N: total unpriviliged samples
 
         Args:
             privileged (bool, optional): Boolean prescribing whether to
@@ -102,6 +124,7 @@ class BinaryLabelDatasetMetric(DatasetMetric):
         Returns:
             float: Base rate (optionally conditioned).
         """
+        #TODO: check if the denominator is Nall*N_positive_priviliged or only
         return (self.num_positives(privileged=privileged)
               / self.num_instances(privileged=privileged))
 

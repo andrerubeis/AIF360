@@ -44,11 +44,13 @@ class Reweighing(Transformer):
             Reweighing: Returns self.
         """
 
+        #Obtain the conditional vectors
         (priv_cond, unpriv_cond, fav_cond, unfav_cond,
         cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav) =\
                 self._obtain_conditionings(dataset)
 
-        n = np.sum(dataset.instance_weights, dtype=np.float64)
+        #Count all the frequencies needed to compute the weights
+        n = np.sum(dataset.instance_weights, dtype=np.float64) #n = 34189.0
         n_p = np.sum(dataset.instance_weights[priv_cond], dtype=np.float64)
         n_up = np.sum(dataset.instance_weights[unpriv_cond], dtype=np.float64)
         n_fav = np.sum(dataset.instance_weights[fav_cond], dtype=np.float64)
@@ -101,7 +103,7 @@ class Reweighing(Transformer):
         """Obtain the necessary conditioning boolean vectors to compute
         instance level weights.
         """
-        # conditioning
+        # conditioning: find the priviliged and unpriviliged samples based on the conditions you specify
         priv_cond = utils.compute_boolean_conditioning_vector(
                             dataset.protected_attributes,
                             dataset.protected_attribute_names,
@@ -112,6 +114,8 @@ class Reweighing(Transformer):
                             condition=self.unprivileged_groups)
         #ravel transform a Panda serie as a numpy array
         #fav_cond: numpy array of booleans (True: object satisfies the conditions
+
+        #conditioning on labels
         fav_cond = dataset.labels.ravel() == dataset.favorable_label
         unfav_cond = dataset.labels.ravel() == dataset.unfavorable_label
 

@@ -25,15 +25,30 @@ def compute_boolean_conditioning_vector(X, feature_names, condition=None):
 
         This corresponds to `(sex == 1 AND age == 1) OR (sex == 0)`.
     """
+    #condition: [{'sex': 1}]
     if condition is None:
         return np.ones(X.shape[0], dtype=bool)
 
+    #Initialize the condition for all the samples as False
     overall_cond = np.zeros(X.shape[0], dtype=bool)
     for group in condition: #group: {sex:1}
+        #Set the condition for each sample to 1
         group_cond = np.ones(X.shape[0], dtype=bool)
+
+        #Scan all protected attributes
         for name, val in group.items(): #name: sex, value:1
+
+            #Scan the protected attributes and its priviliged values, take the current protected attribute and its value
+            #then since feature_names are the names of protected attributes, we store the index
+            #of the protected attributes in the list feature names
+            #then since X contains the values of the dataset corresponding to the protected attributes, we compare
+            #X[:, index] the column of the current protected attribute with its values with the priviliged value
+            #in this way we will obtain a vectore with True for priviliged samples and False otherwise
+
             index = feature_names.index(name) #store the index corresponding to the name feature in feature_names (['sex'])
             group_cond = np.logical_and(group_cond, X[:, index] == val)
+
+        #Stack together all the sample satisfying the conditions required
         overall_cond = np.logical_or(overall_cond, group_cond)
 
     return overall_cond
@@ -64,7 +79,7 @@ def compute_num_pos_neg(X, y, w, feature_names, label, condition=None):
 
     Args:
         X (numpy.ndarray): Dataset features.
-        y (numpy.ndarray): Label vector.
+        y (numpy.ndarray): Label vector (privileged + unprivileged).
         w (numpy.ndarray): Instance weight vector.
         feature_names (list): Names of the features.
         label (float): Value of label (unfavorable/positive or
@@ -76,9 +91,17 @@ def compute_num_pos_neg(X, y, w, feature_names, label, condition=None):
         int: Number of positives/negatives (optionally conditioned)
     """
     y = y.ravel()
+    #cond_vec: np.array of booleans: True if condition satisfied (ex. sex = 0 -> True for each Female sample)
     cond_vec = compute_boolean_conditioning_vector(X, feature_names,
         condition=condition)
-    return np.sum(w[np.logical_and(y == label, cond_vec)], dtype=np.float64)
+    #w: weighted vector rebalanced, it contains 4 different weights (up, un, pp, pn)
+    #ex. when priviliged = False (Female) and label = 1, np.logical_and(y == label, cond_vec) takes all the favorable
+    #outcomes of unpriviliged group
+    #w[np.logical_and(y == label, cond_vec): I have a vector #favorable outcome unpriviliged long (1253) containing the same value
+    #in each cell (2.14975936)
+
+    #Priviliged: Male, Label: 1 -> n_elements: 6881, value: 0.79063385, value * n_elements = 6881*0.79063385=5440.35152185 = sum
+    return np.sum(w[np.logical_and(y == label, cond_vec)], dtype=np.float64) #same of doing 1253*2.14975936
 
 def compute_num_TF_PN(X, y_true, y_pred, w, feature_names, favorable_label,
                       unfavorable_label, condition=None):
