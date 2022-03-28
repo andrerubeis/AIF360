@@ -8,7 +8,6 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
             https://github.com/fair-preprocessing/nips2017/blob/master/Adult/code/Generate_Adult_Data.ipynb
             If sub_samp != False, then return smaller version of dataset truncated to tiny_test data points.
         """
-        print("ciao")
         # Group age by decade
         #df['Age (decade)'] (Series): (0,age0), (1, age1), ...
         #Create a new column 'Age (decade) in which each age is mapped to its decade (ex. 25->20, 38->30)
@@ -82,6 +81,12 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
                               "race": [1.0]}
 
     # protected attribute maps
+    # dict of dicts:
+    #
+    # 1 dict:   key: protected attribute
+    #           value: 2 dict ->    key: 0/1
+    #                               value: unprivileged/privileged
+
     all_protected_attribute_maps = {"sex": {1.0: 'Male', 0.0: 'Female'},
                                     "race": {1.0: 'White', 0.0: 'Non-white'}}
 

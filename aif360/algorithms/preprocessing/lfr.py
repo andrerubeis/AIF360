@@ -148,13 +148,21 @@ class LFR(Transformer):
         if self.seed is not None:
             np.random.seed(self.seed)
 
+        # dataset.protected_attributes: 2 columns (sex, race)
+        # To select the column of interest we use index(self.protected_attribute_name) (self.protected_attribute_name = sex)
+        # dataset.protected_attributes[:, dataset.protected_attribute_names.index(self.protected_attribute_name)]
+        # it just select the first column which is the one corresponding to the protected attribute sex
+        #in the end we reshape it in order to get a column vector
+
         protected_attributes = np.reshape(
             dataset.protected_attributes[:, dataset.protected_attribute_names.index(self.protected_attribute_name)],
             [-1, 1])
+
         unprivileged_sample_ids = \
         np.array(np.where(protected_attributes == self.unprivileged_group_protected_attribute_value))[0].flatten()
         privileged_sample_ids = \
         np.array(np.where(protected_attributes == self.privileged_group_protected_attribute_value))[0].flatten()
+
         features_unprivileged = dataset.features[unprivileged_sample_ids]
         features_privileged = dataset.features[privileged_sample_ids]
 
