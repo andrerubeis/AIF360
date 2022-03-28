@@ -54,10 +54,17 @@ class LFR(Transformer):
         #self.unprivileged_groups: dictionary of one single element {'sex':0}
         #self.privileged_groups: dictionary of one single element {'sex':1}
 
+        #Store protected, privileged, unprivileged attribute nama and value
         self.protected_attribute_name = list(self.unprivileged_groups[0].keys())[0]
         self.unprivileged_group_protected_attribute_value = self.unprivileged_groups[0][self.protected_attribute_name]
         self.privileged_group_protected_attribute_value = self.privileged_groups[0][self.protected_attribute_name]
 
+        # Hyperparameters (see paper for further details)
+        # - k : number of prototypes
+        # - Ax : weight matrix used to make the mapping to Z a good description of X
+        # - Ay : used to make the mapping first from X to Z, then from Z to Y as much accurate as possible with the
+        #        actual classification function f
+        # - Az : used to satisfy the statistical parity by the mapping from X to Z
         self.k = k      #10
         self.Ax = Ax    #0.1
         self.Ay = Ay    #1
@@ -82,7 +89,7 @@ class LFR(Transformer):
         if self.seed is not None:
             np.random.seed(self.seed)
 
-        num_train_samples, self.features_dim = np.shape(dataset.features)
+        num_train_samples, self.features_dim = np.shape(dataset.features) #(34189, 18)
 
         #dataset.protected_attributes is np array of lists, each one per sample (34189) where each list has length equals
         #to n, where n is the number of protected attributes and each element of the list is 0 or 1 representing
@@ -91,21 +98,22 @@ class LFR(Transformer):
         #For example if protected attributes are race and sex and we have 2 samples: White, Man and White Woman
         #the corresponding lists will be [1, 1][1, 0]
 
-        #In the following line of code we simply take the values of protected attribute of interest and reshape iy
-        #as a column
+        # In the following line of code we simply take the values of protected attribute's column of interest, we get
+        # a row vector, and we finally reshape it as a column vector
 
         protected_attributes = np.reshape(
             dataset.protected_attributes[:, dataset.protected_attribute_names.index(self.protected_attribute_name)],
             [-1, 1])
 
         #self.unprivileged_group_protected_attribute_value: 0
-        #np.where(protected_attributes == self.unprivileged_group_protected_attribute_value):   check where protected_attributes
+        #np.where(protected_attributes == self.unprivileged_group_protected_attribute_value):   check where protected_attributes assume unprivileged values and returns a numpy array of 2 dimensions where the first one is a np array containing the indices of elements equal to unprivileged and the second one is another np array containing the value assumed in correspondance of each index
         #flatten: reduce the dimensions of something to a single dimension (ex. ([1,2], [3,4])->([1,2,3,4])                                                                                     assume value 0
+
         unprivileged_sample_ids = np.array(np.where(protected_attributes == self.unprivileged_group_protected_attribute_value))[0].flatten()
         privileged_sample_ids = np.array(np.where(protected_attributes == self.privileged_group_protected_attribute_value))[0].flatten()
 
-        #features are not names but numbers:[ 0.41213417, -1.42078489, -0.230512  , ..., -0.18428884,
-        #-0.23414819, -0.57391655]])
+        #Mapping : features are not names but numbers:[ 0.41213417, -1.42078489, -0.230512  , ..., -0.18428884,
+        #-0.23414819, -0.57391655]]) while labels are retained
 
         features_unprivileged = dataset.features[unprivileged_sample_ids]
         features_privileged = dataset.features[privileged_sample_ids]
@@ -113,8 +121,8 @@ class LFR(Transformer):
         labels_privileged = dataset.labels[privileged_sample_ids]
 
         # Initialize the LFR optim objective parameters
-        parameters_initialization = np.random.uniform(size=self.k + self.features_dim * self.k)
-        #bnd = [(0,1)...(0,1), ..., (None, None), ..., (None, None)]
+        parameters_initialization = np.random.uniform(size=self.k + self.features_dim * self.k) #190
+        #bnd = [(0,1)...(0,1), ..., (None, None), ..., (None, None)], len(bnd) = 190
         bnd = [(0, 1)]*self.k + [(None, None)]*self.features_dim*self.k
         lfr_helpers.LFR_optim_objective.steps = 0
 

@@ -53,6 +53,7 @@ class Transformer(BaseClass):
         Algorithm-specific configuration parameters should be passed here.
         """
         #kwargs: {'unprivileged_groups': [{'sex': 0}], 'privileged_groups': [{'sex': 1}]}
+        #Store protected attributes (lfr)
         self._params = kwargs
 
     def fit(self, dataset):

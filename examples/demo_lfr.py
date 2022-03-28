@@ -84,6 +84,7 @@ print(
 # %%
 
 scale_orig = StandardScaler()
+#TODO: see how features labels (str) are mapped into floats
 dataset_orig_train.features = scale_orig.fit_transform(dataset_orig_train.features)
 dataset_orig_test.features = scale_orig.transform(dataset_orig_test.features)
 
@@ -96,6 +97,8 @@ dataset_orig_test.features = scale_orig.transform(dataset_orig_test.features)
 privileged_groups = [{'sex': 1}]
 unprivileged_groups = [{'sex': 0}]
 
+# Istantiate the LFR object with protected attribute's name, its corresponding privileged and unprivileged values and
+# hyperparameters used in paper Ax, Ay and Az
 TR = LFR(unprivileged_groups=unprivileged_groups,
          privileged_groups=privileged_groups,
          k=10, Ax=0.1, Ay=1.0, Az=2.0,
