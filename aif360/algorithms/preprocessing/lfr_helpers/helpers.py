@@ -8,14 +8,14 @@ from scipy.special import softmax
 def LFR_optim_objective(parameters, x_unprivileged, x_privileged, y_unprivileged,
                         y_privileged, k=10, A_x=0.01, A_y=0.1, A_z=0.5, print_interval=250, verbose=1):
 
-    num_unprivileged, features_dim = x_unprivileged.shape
-    num_privileged, _ = x_privileged.shape
+    num_unprivileged, features_dim = x_unprivileged.shape   #11306, 18
+    num_privileged, _ = x_privileged.shape                  #22883, 18
 
     w = parameters[:k]
-    prototypes = parameters[k:].reshape((k, features_dim))
+    prototypes = parameters[k:].reshape((k, features_dim))  #k x features = 10 vectors of length n_features 18
 
+    #Equation 6 of the paper
     M_unprivileged, x_hat_unprivileged, y_hat_unprivileged = get_xhat_y_hat(prototypes, w, x_unprivileged)
-
     M_privileged, x_hat_privileged, y_hat_privileged = get_xhat_y_hat(prototypes, w, x_privileged)
 
     y_hat = np.concatenate([y_hat_unprivileged, y_hat_privileged], axis=0)
@@ -36,11 +36,20 @@ def LFR_optim_objective(parameters, x_unprivileged, x_privileged, y_unprivileged
 
 
 def get_xhat_y_hat(prototypes, w, x):
-    M = softmax(-cdist(x, prototypes), axis=1)
+
+    # Equation 2:
+    #
+    # M = M_{n,k} = P(Z = k | x) = exp(-d(x, vk))/ sum_{j=1}^{K} exp(-d(x,vj)
+    #cdist: stands for "compute distance" (euclidean by default)
+    M = softmax(-cdist(x, prototypes), axis=1) #M_{n,k}
+
+    #Equation 9
     x_hat = np.matmul(M, prototypes)
+
+    #Equation 11
     y_hat = np.clip(
         np.matmul(M, w.reshape((-1, 1))),
-        np.finfo(float).eps,
-        1.0 - np.finfo(float).eps
+        np.finfo(float).eps, #values of M*w < np.finfo(float).eps are replaced by np.finfo(float).eps
+        1.0 - np.finfo(float).eps   #values of M*w > np.finfo(float).eps are replaced by 1-np.finfo(float).eps
     )
     return M, x_hat, y_hat

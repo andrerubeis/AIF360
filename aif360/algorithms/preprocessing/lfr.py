@@ -121,10 +121,15 @@ class LFR(Transformer):
         labels_privileged = dataset.labels[privileged_sample_ids]
 
         # Initialize the LFR optim objective parameters
-        parameters_initialization = np.random.uniform(size=self.k + self.features_dim * self.k) #190
+        parameters_initialization = np.random.uniform(size=self.k + self.features_dim * self.k) #190 = 10 + 18*10
         #bnd = [(0,1)...(0,1), ..., (None, None), ..., (None, None)], len(bnd) = 190
+        #bnd will contain the ranges for the k weights ((0,1), first k elements) while the next
+        #k*features dim will be ranges of the k prototypes vk each one having length features
+
         bnd = [(0, 1)]*self.k + [(None, None)]*self.features_dim*self.k
         lfr_helpers.LFR_optim_objective.steps = 0
+
+        # The function fmin_l_bfgs_b below returns x, f and d, only x is kept in this case
 
         self.learned_model = optim.fmin_l_bfgs_b(lfr_helpers.LFR_optim_objective, x0=parameters_initialization, epsilon=1e-5,
                                                       args=(features_unprivileged, features_privileged,
