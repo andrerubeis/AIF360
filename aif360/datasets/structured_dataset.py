@@ -93,7 +93,7 @@ class StructuredDataset(Dataset):
         if df.isna().any().any():
             raise ValueError("Input DataFrames cannot contain NA values.")
         try:
-            df = df.astype(np.float64)
+            df = df.astype(np.float64) #convert all the the dataframe in float64
         except ValueError as e:
             print("ValueError: {}".format(e))
             raise ValueError("DataFrame values must be numerical.")

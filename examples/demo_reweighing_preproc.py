@@ -38,8 +38,8 @@ protected_attribute_used = 1  # 1, 2
 if dataset_used == "adult":
     #     dataset_orig = AdultDataset()
     if protected_attribute_used == 1:
-        privileged_groups = [{'sex': 1}]
-        unprivileged_groups = [{'sex': 0}]
+        privileged_groups = [{'sex': 1}] #males
+        unprivileged_groups = [{'sex': 0}] #females
         dataset_orig = load_preproc_data_adult(['sex'])
     else:
         privileged_groups = [{'race': 1}]

@@ -82,6 +82,7 @@ class StandardDataset(BinaryLabelDataset):
         """
         # 2. Perform dataset-specific preprocessing
         if custom_preprocessing:
+            #recode labels, protected attributes and divide by groups some features (age, educational years..)
             df = custom_preprocessing(df)
 
         # 3. Drop unrequested columns
@@ -139,7 +140,9 @@ class StandardDataset(BinaryLabelDataset):
         privileged_protected_attributes = []
         unprivileged_protected_attributes = []
         #protected_attribute_names: sex (reweighting example), privileged_ classes : [1.0]
-        for attr, vals in zip(protected_attribute_names, privileged_classes):
+
+        #mapping in numerical values priviliged and unprivileged values
+        for attr, vals in zip(protected_attribute_names, privileged_classes): #attr assumes names of the protected attribute while priviliged calsses assumes the value of the privileged value of the protected attribute
             privileged_values = [1.]
             unprivileged_values = [0.]
             if callable(vals): #vals is callable since it is a list [1.0]
@@ -150,11 +153,13 @@ class StandardDataset(BinaryLabelDataset):
                 unprivileged_values = list(set(df[attr]).difference(vals))
 
             else:
-                # find all instances which match any of the attribute values
+                # priv: np array of True/False if the value of the array is priviliged or not
                 priv = np.logical_or.reduce(np.equal.outer(vals, df[attr].to_numpy()))
-                df.loc[priv, attr] = privileged_values[0]
-                df.loc[~priv, attr] = unprivileged_values[0]
+                df.loc[priv, attr] = privileged_values[0]       #assign 1 to all the priviliged values
+                df.loc[~priv, attr] = unprivileged_values[0]    #assign 0 to all the unprivileged values
 
+            #Store for all the protected attributes the privileged and unprivileged values in the lists below
+            #this is useful in particular for more than on protected attribute
             privileged_protected_attributes.append(
                 np.array(privileged_values, dtype=np.float64))
             unprivileged_protected_attributes.append(

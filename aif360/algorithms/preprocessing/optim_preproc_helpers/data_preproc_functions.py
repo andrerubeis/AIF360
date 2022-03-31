@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=False):
-    def custom_preprocessing(df):
+    def custom_preprocessing(df): #it it applied to the raw original dataset that has been loaded in Adult Dataset class
         """The custom pre-processing function is adapted from
             https://github.com/fair-preprocessing/nips2017/blob/master/Adult/code/Generate_Adult_Data.ipynb
             If sub_samp != False, then return smaller version of dataset truncated to tiny_test data points.
@@ -70,6 +70,8 @@ def load_preproc_data_adult(protected_attributes=None, sub_samp=False, balance=F
     #2. I make the preprocessing of the dataset so mappings of race, age and sex
 
     #3. Load the dataset processed
+    #When you call load_preproc you start here
+    #Define the features you want: XD: not protected + protected, D: protected, Y: labels
     XD_features = ['Age (decade)', 'Education Years', 'sex', 'race']
     D_features = ['sex', 'race'] if protected_attributes is None else protected_attributes #D_features = sex
     Y_features = ['Income Binary']
