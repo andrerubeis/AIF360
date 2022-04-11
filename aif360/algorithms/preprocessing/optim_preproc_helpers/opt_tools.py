@@ -400,7 +400,7 @@ class OptTools():
                 cp.sum(cp.multiply(self.CMlist[i], Pxy_xhyh), axis=1) <=
                 self.dlist[i])
 
-        # 4. Discrimination control
+    # 4. Discrimination control
         for d in range(self.dfMask_Pxyd_to_Pd.shape[1]):
             for d2 in range(self.dfMask_Pxyd_to_Pd.shape[1]):
                 if d > d2:
