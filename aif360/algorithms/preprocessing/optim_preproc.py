@@ -58,8 +58,8 @@ class OptimPreproc(Transformer):
             privileged_groups=privileged_groups, verbose=verbose, seed=seed)
 
         self.seed = seed
-        self.optimizer = optimizer
-        self.optim_options = optim_options
+        self.optimizer = optimizer #<class 'aif360.algorithms.preprocessing.optim_preproc_helpers.opt_tools.OptTools'>
+        self.optim_options = optim_options #distorsion function, epsilon,  dlist
         self.verbose = verbose
 
         self.unprivileged_groups = unprivileged_groups

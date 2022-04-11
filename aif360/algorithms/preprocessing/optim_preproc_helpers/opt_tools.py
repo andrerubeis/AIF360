@@ -94,7 +94,14 @@ class OptTools():
         else:
             self.features = features
 
-        # build joint distribution
+        # build joint distribution : compute the probability of each possible combination in the dataset
+        # from:
+        #
+        # race Age (decade) Education Years Income Binary sex
+        #   0   10                10              <=50K     F
+        #   ...
+        #   1   >=70            >12              >=50K      M
+
         self.dfJoint = self.df.groupby(self.features).size().reset_index()
         self.dfJoint.rename(columns={0: 'Count'}, inplace=True)
         self.dfJoint['Frequency'] = self.dfJoint['Count'].apply(
@@ -190,7 +197,7 @@ class OptTools():
         #504 total unique combinations
 
         self.DXY_features = self.D_features+self.X_features+self.Y_features #['sex', 'race', 'Age (decade)', 'Education Years', 'Income Binary']
- #        self.DXY_values = self.D_values+self.X_values+self.Y_values
+        self.DXY_values = self.D_values+self.X_values+self.Y_values
         self.DXY_index = pd.MultiIndex.from_product(self.DXY_values,
                                                     names=self.DXY_features)
 
